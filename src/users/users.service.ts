@@ -3,10 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 @Injectable()
 export class UsersService {
@@ -63,6 +64,7 @@ export class UsersService {
         id: true,
         email: true,
         name: true,
+        role: true,
       },
     });
   }
@@ -98,11 +100,47 @@ export class UsersService {
     });
   }
 
+  async findAllUsers() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async updateUserRole(id: number, dto: UpdateUserRoleDto) {
+    await this.findPublicProfile(id);
+
+    return this.prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        role: dto.role,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+  }
+
   private privateUserSelect() {
     return {
       id: true,
       email: true,
       name: true,
+      role: true,
       createdAt: true,
       products: {
         select: {
@@ -133,6 +171,21 @@ export class UsersService {
           },
         },
       },
+      favorites: {
+        select: {
+          id: true,
+          createdAt: true,
+          product: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              imageUrl: true,
+              category: true,
+            },
+          },
+        },
+      },
     };
   }
 
@@ -140,6 +193,7 @@ export class UsersService {
     return {
       id: true,
       name: true,
+      role: true,
       createdAt: true,
       products: {
         select: {

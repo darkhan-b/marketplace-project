@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Role } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -40,13 +41,14 @@ export class AuthService {
         id: true,
         email: true,
         name: true,
+        role: true,
         createdAt: true,
       },
     });
 
     return {
       user,
-      accessToken: this.signToken(user.id, user.email),
+      accessToken: this.signToken(user.id, user.email, user.role),
     };
   }
 
@@ -72,15 +74,17 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
       },
-      accessToken: this.signToken(user.id, user.email),
+      accessToken: this.signToken(user.id, user.email, user.role),
     };
   }
 
-  private signToken(userId: number, email: string): string {
+  private signToken(userId: number, email: string, role: Role): string {
     return this.jwtService.sign({
       sub: userId,
       email,
+      role,
     });
   }
 }

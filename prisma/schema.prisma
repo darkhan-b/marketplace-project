@@ -10,11 +10,18 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  SELLER
+  ADMIN
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
   name      String?
+  role      Role     @default(USER)
   createdAt DateTime @default(now()) @map("created_at")
 
   products  Product[]

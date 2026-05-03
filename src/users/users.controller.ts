@@ -10,8 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RolesGuard } from '../auth/roles.guard';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
@@ -41,13 +45,32 @@ export class UsersController {
     return this.usersService.deleteMe(req.user.id);
   }
 
-  @Get(':id')
-  findPublicProfile(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.findPublicProfile(id);
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get()
+  findAllUsers() {
+    return this.usersService.findAllUsers();
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Patch(':id/role')
+  updateUserRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserRoleDto,
+  ) {
+    return this.usersService.updateUserRole(id, dto);
   }
 
   @Get(':id/products')
   findUserProducts(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findUserProducts(id);
+  }
+
+  @Get(':id')
+  findPublicProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findPublicProfile(id);
   }
 }
