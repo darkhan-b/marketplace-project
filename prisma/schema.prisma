@@ -16,6 +16,12 @@ enum Role {
   ADMIN
 }
 
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -27,6 +33,7 @@ model User {
   products  Product[]
   cartItems CartItem[]
   favorites Favorite[]
+  orders    Order[]
 
   @@map("users")
 }
@@ -42,10 +49,11 @@ model Product {
   userId     Int
   categoryId Int?
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category  Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  cartItems CartItem[]
-  favorites Favorite[]
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  cartItems  CartItem[]
+  favorites  Favorite[]
+  orderItems OrderItem[]
 
   @@map("products")
 }
@@ -85,4 +93,32 @@ model Favorite {
 
   @@unique([userId, productId])
   @@map("favorites")
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  totalPrice Decimal     @db.Decimal(10, 2) @map("total_price")
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id       Int     @id @default(autoincrement())
+  quantity Int
+  price    Decimal @db.Decimal(10, 2)
+
+  orderId   Int
+  productId Int
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("order_items")
 }
