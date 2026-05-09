@@ -31,7 +31,13 @@ async function bootstrap() {
 
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(process.env.PORT || 8000, '0.0.0.0');
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'https://marketplace-hzq3c1h9q-darkhan-bs-projects.vercel.app',
+    ],
+    credentials: true,
+  });
 }
 
 bootstrap();
