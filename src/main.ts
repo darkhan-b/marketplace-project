@@ -14,6 +14,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://marketplace-hzq3c1h9q-darkhan-bs-projects.vercel.app',
+      'https://marketplace-web-taupe.vercel.app'
     ],
     credentials: true,
   });
